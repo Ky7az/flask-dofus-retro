@@ -1,0 +1,211 @@
+{% extends "layout.html" %}
+
+{% block title %}Craft{% endblock %}
+
+{% block header %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='css/bootstrap-table-reorder-rows.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/bootstrap-table.min.css')}}" rel="stylesheet"> 
+{% endblock %}
+
+{% block body %}
+    <div class="modal fade" id="modalDeleteCraftForm">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Terminate Craft</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" id="playerName" class="form-control" readonly/>
+                        <input type="text" id="itemName" class="form-control" readonly/>
+                        <input type="text" id="craftId" class="form-control" readonly hidden/>
+                    </div>
+                    <div class="form-group" id="updateStorageGroup">
+                        <span>Crafted (If checked, ingredients will be removed from storage).</span>
+                        <input type="checkbox" id="updateStorage" class="form-control"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="deleteCraftFormClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="deleteCraftFormSubmit" type="submit" class="btn btn-primary">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#reciepes" aria-controls="reciepes" aria-selected="true">Reciepes</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#ingredients" aria-controls="ingredients" aria-selected="false">Ingredients</a class="nav-link"></li>
+    </ul>
+    <div class="tab-content">
+        <div id="reciepes" class="tab-pane fade show active" role="tabpanel">
+            <table id="table" 
+                class="table table-sm table-striped table-dark"
+                data-toggle="table"
+                data-url="/crafts"
+                data-method="get"
+                data-sort-name="pri"
+                data-sort-order="asc"
+                data-use-row-attr-func="true"
+                data-reorderable-rows="true"
+                data-search="true"
+                data-striped="true"
+                data-show-refresh="true"
+                data-height="1250">
+                <thead>
+                    <tr>
+                        <th data-field="act"></th>
+                        <th data-field="pri" data-sortable="true">Priority</th>
+                        <th data-field="p" data-sortable="true">Player</th>
+                        <th data-field="it" data-sortable="true">Item</th>
+                        <th data-field="rec" data-sortable="false">Recipe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div id="ingredients" class="tab-pane fade" role="tabpanel">
+            <table id="table_ing" 
+                class="table table-sm table-striped table-dark"
+                data-toggle="table"
+                data-url="/crafts/ingredients"
+                data-method="get"
+                data-sort-name="name"
+                data-sort-order="asc"
+                data-search="true"
+                data-striped="true"
+                data-show-refresh="true"
+                data-height="1250">
+                <thead>
+                    <tr>
+                        <th data-field="acts"></th>
+                        <th data-field="name" data-sortable="true">Ingredient</th>
+                        <th data-field="crafts" data-sortable="false">Crafts</th>
+                        <th data-field="maxPri" data-sortable="true">Max Priority</th>
+                        <th data-field="missing" data-sortable="true">Miss</th>
+                        <th data-field="crafts_quantity" data-sortable="false">Needs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+
+    <script src="{{url_for('static', filename='js/jquery.tablednd.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bootstrap-table-reorder-rows.min.js')}}"></script>
+    <script type="text/javascript">
+
+        var addToIng = function() {
+            $('.btn-add-sub-ingredient').click(function(event){
+                event.preventDefault();
+                var row_index = $(this).closest('tr').attr('data-index');
+                var data = { 
+                    item_id: $(this).attr('data-ing-id'),
+                    quantity: 1,
+                };
+                var dataJson = JSON.stringify(data);
+                $.ajax({
+                        type: 'POST',
+                        url: $(this).attr('href'),
+                        data: dataJson,
+                        contentType: 'application/json; charset=utf-8',
+                        crossDomain: true,
+                        success: function(data) {
+                            // $('#table_ing').bootstrapTable('refresh');
+                            $('#table_ing').bootstrapTable('updateCell', {index: row_index, field: 'missing', value: data['missing']});
+                            $('#table_ing').bootstrapTable('updateCell', {index: row_index, field: 'crafts_quantity', value: data['crafts_quantity']});
+                            // addToIng();
+                        },
+                        error: function(jqXHR, textStatus, error) {
+                            console.error('Could not update list!');
+                        }
+                    });
+            });
+        }
+
+        $('#table_ing').bootstrapTable({
+            onPostBody: function(){
+                addToIng();
+            },
+        });
+
+        var $table = $('#table').bootstrapTable({
+            onReorderRowsDrop: function(table, row) {
+                var $tr = $("#" + row.getAttribute('id'));
+                var data = { 
+                    index: row.getAttribute('data-index')
+                };
+                var dataJson = JSON.stringify(data);
+
+                $.ajax({
+                    type: 'PUT',
+                    url: $tr.find("td:eq(0)").find('a').attr('href'),
+                    data: dataJson,
+                    contentType: 'application/json; charset=utf-8',
+                    crossDomain: true,
+                    success: function(data) {
+                        $('#table').bootstrapTable('refresh');
+                    },
+                    error: function(jqXHR, textStatus, error) {
+                        console.error('Could not update craft!')
+                    }
+                });
+            },
+            onPostBody: function() {
+                $('.btn-delete-craft').click(function(event){
+                    event.preventDefault();
+                    var craftId = $(this).attr('data-craft-id');
+                    var ready = $(this).attr('data-craft-ready')==1?true:false;
+                    $tr = $(this).closest('tr');
+                    var playerName = $tr.find("td:eq(2)").text();
+                    var itemName = $tr.find("td:eq(3)").text();
+                    $('#playerName').val(playerName);
+                    $('#itemName').val(itemName);
+                    $('#craftId').val(craftId);
+                    $('#updateStorage').prop('checked', ready);
+                    if(ready){
+                        $('#updateStorageGroup').show();
+                    }else{
+                        $('#updateStorageGroup').hide();
+                    }
+                });
+            }  
+         });
+
+         $("#deleteCraftFormSubmit").click(function(event) {
+            event.preventDefault();
+            var data = { 
+                update_storage: $('#updateStorage').prop('checked'),
+            };
+            var craft_id = $('#craftId').val();
+            var dataJson = JSON.stringify(data);
+
+            $.ajax({
+                type: 'DELETE',
+                url: '/crafts/' + craft_id,
+                data: dataJson,
+                contentType: 'application/json; charset=utf-8',
+                crossDomain: true,
+                dataType: 'json',
+                success: function(data) {
+                    $('#deleteCraftFormClose').click();
+                    $('#table').bootstrapTable('refresh');
+                },
+                error: function(jqXHR, textStatus, error) {
+                    console.error('Could not delete craft!')
+                }
+            });
+         });
+
+    </script>
+{% endblock %}

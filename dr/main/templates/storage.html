@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}Storage{% endblock %}
+
+{% block header %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='css/bootstrap-table.min.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <table id="table" 
+           class="table table-sm table-striped table-dark"
+           data-toggle="table"
+           data-url="/storages"
+           data-method="get"
+           data-sort-name="it"
+           data-sort-order="asc"
+           data-search="true"
+           data-striped="true"
+           data-show-refresh="true"
+           data-height="1250">
+        <thead>
+            <tr>
+                <th data-field="p" data-sortable="true">Player</th>
+                <th data-field="ty" data-sortable="true">Type</th>
+                <th data-field="it" data-sortable="true">Item</th>
+                <th data-field="qty" data-sortable="true">Quantity</th>
+                <th data-field="avg" data-sortable="true">Average Price</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+{% endblock %}

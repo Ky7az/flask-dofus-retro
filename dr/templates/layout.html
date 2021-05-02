@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    {% block header %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dr . {% block title %}{% endblock %}</title>
+
+    <link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" rel="stylesheet"/>
+    {% endblock %}
+</head>
+
+<body>
+    {% block navbar %}
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="#">Dr</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li {% if request.endpoint=='main.index' %} class="nav-item active" {% endif %}>
+                    <a class="nav-link" href="{{ url_for('main.index') }}">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li {% if request.endpoint=='main.item' %} class="nav-item active" {% endif %}>
+                    <a class="nav-link" href="{{ url_for('main.item') }}">Item</a>
+                </li>
+                <li {% if request.endpoint=='main.craft' %} class="nav-item active" {% endif %}>
+                    <a class="nav-link" href="{{ url_for('main.craft') }}">Craft</a>
+                </li>
+                <li {% if request.endpoint=='main.storage' %} class="nav-item active" {% endif %}>
+                    <a class="nav-link" href="{{ url_for('main.storage') }}">Storage</a>
+                </li>
+                <li {% if request.endpoint=='main.market_entry' %} class="nav-item active" {% endif %}>
+                    <a class="nav-link" href="{{ url_for('main.market_entry') }}">Market Entry</a>
+                </li>
+                <li {% if request.endpoint=='main.market_report' %} class="nav-item active" {% endif %}>
+                    <a class="nav-link" href="{{ url_for('main.market_report') }}">Market Report</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% endblock %}
+
+    <br/>
+    <br/>
+    <br/>
+
+    <div class="container-fluid">
+        {% block body %} {% endblock %}
+    </div>
+
+    {% block footer %}
+    <script src="{{url_for('static', filename='js/jquery-3.4.1.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/popper.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+    {% endblock %}
+
+</body>
+
+</html>

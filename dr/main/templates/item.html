@@ -1,0 +1,156 @@
+{% extends "layout.html" %}
+
+{% block title %}Item{% endblock %}
+
+{% block header %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='css/bootstrap-table.min.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+
+    <div class="modal fade" id="modalCreateCraftForm">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">New Craft</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="playerSelect">Player</label>
+                        <select id="playerSelect" class="form-control"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemSelect">Item</label>
+                        <select id="itemSelect" class="form-control"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="craftFormClose" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="craftFormSubmit" type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tableToolbar">
+        <label for="categSelect">Category</label>
+        <select id="categSelect">
+            <option></option>
+        </select>
+    </div>
+
+    <table id="table" 
+           class="table table-sm table-striped table-dark"
+           data-toggle="table"
+           data-url="/items"
+           data-query-params="queryParams"
+           data-method="get"
+           data-pagination="true"
+           data-side-pagination="server"
+           data-page-size="100"
+           data-show-extended-pagination="true"
+           data-page-list="[100, 250, 500]"
+           data-pagination-pre-text="Prev"
+           data-pagination-next-text="Next"
+           data-search="true"
+           data-toolbar="#tableToolbar"
+           data-striped="true"
+           data-show-refresh="true"
+           data-height="850">
+        <thead>
+            <tr>
+                <th data-field="act"></th>
+                <th data-field="id" data-sortable="false">Id</th>
+                <th data-field="n" data-sortable="true">Name</th>
+                <th data-field="cat" data-sortable="false">Category</th>
+                <th data-field="scat" data-sortable="false">Sub Category</th>
+                <th data-field="lvl" data-sortable="false">Level</th>
+                <th data-field="avg" data-sortable="false">Average Price</th>
+                <th data-field="rec" data-sortable="false">Recipe</th>
+                <th data-field="crafts_quantity" data-sortable="false">Needs</th>
+                <th data-field="eff" data-sortable="false">Effects</th>
+                <th data-field="sta" data-sortable="false">Stats</th>
+                <th data-field="cnd" data-sortable="false">Conditions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+    <script type="text/javascript">
+
+        // Toolbar
+        $.getJSON("/items/categs", function(categs) {
+            $.each(categs, function(idx) {
+                categName = categs[idx]['name'];
+                categValue = categs[idx]['value'];
+                $('#categSelect').append(`<option value="${categName}">${categValue}</option>`); 
+            });
+        });
+        function queryParams(params) {
+            return {
+                categ_select: $("#categSelect").val(),
+                sort: params['sort'],
+                order: params['order'],
+                search: params['search'],
+                offset: params['offset'],
+                limit: params['limit']
+            };
+        };
+        $('#categSelect').on('change', function() {
+            $('#table').bootstrapTable('refresh');
+        });
+
+        // Table
+        var $table = $('#table').bootstrapTable({
+            onLoadSuccess: function() {
+                $('.btn-create-craft').click(function() {
+                    $tr = $(this).closest('tr')
+                    var itemId = $tr.find("td:eq(1)").text();
+                    var itemName = $tr.find("td:eq(2)").text();
+                    $('#itemSelect').empty().append(`<option value="${itemId}">${itemName}</option>`);
+                });
+            }
+         });
+
+        // Create Craft FORM
+        $.getJSON("/players", function(players) {
+            $.each(players, function(idx) {
+                playerId = players[idx]['id'];
+                playerName = players[idx]['name'];
+                $('#playerSelect').append(`<option value="${playerId}">${playerName}</option>`); 
+            });
+        });
+         $("#craftFormSubmit").click(function() {
+            var data = { 
+                item_id: $('#itemSelect').val(), 
+                player_id: $('#playerSelect').val()
+            };
+            var dataJson = JSON.stringify(data);
+
+            $.ajax({
+                type: 'POST',
+                url: '/crafts',
+                data: dataJson,
+                contentType: 'application/json; charset=utf-8',
+                crossDomain: true,
+                dataType: 'json',
+                success: function(data) {
+                    $('#craftFormClose').click();
+                },
+                error: function(jqXHR, textStatus, error) {
+                    console.error('Could not create craft!')
+                }
+            });
+         });
+
+    </script>
+{% endblock %}

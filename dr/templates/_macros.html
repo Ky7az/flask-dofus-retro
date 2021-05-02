@@ -1,0 +1,28 @@
+{% macro render_field_with_errors(field) %}
+<dt>{{ field.label }}</dt>
+<dd>{{ field(**kwargs)|safe }}
+    {% if field.errors %}
+        <ul class="errors">
+            {% for error in field.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</dd>
+{% endmacro %}
+
+{% macro render_field(field) %}
+    <dt>{{ field.label }}</dt>
+    <dd>{{ field(**kwargs)|safe }}<dd>
+{% endmacro %}
+
+{% macro render_form(form, action, submit) %}
+<form method="POST" action="{{ action }}">
+    <dl>
+        {% for f in form %}
+            {{ render_field_with_errors(f) }}
+        {% endfor %}
+    </dl>
+    <p><input type="submit" value="{{ submit }}"></p>
+</form>
+{% endmacro %}

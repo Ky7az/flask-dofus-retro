@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block title %}Market Report{% endblock %}
+
+{% block header %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='css/bootstrap-table.min.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <div id="tableToolbar" class="form-group">
+        <label for="modeSelect">Mode</label>
+        <select id="modeSelect">
+            <option value="diffPercentAveragePrice" selected>[Diff Percent] Unit Price - Average Price</option>
+            <option value="diffPercentUnitPrice">[Diff Percent] Unit Price - Last Unit Price</option>
+            <option value="ratioUnitPrice">[Ratio] Unit Price 1/10</option>
+        </select>
+        <div id="diffPercentAveragePrice" class="modeParams">
+            <label for="filterMinPercentAvgPrice">Min Diff Percent</label> <input id="filterMinPercentAvgPrice" value="-30">
+            <label for="filterMinAvgPrice">Min Average Price</label> <input id="filterMinAvgPrice" value="200">
+        </div>
+        <div id="diffPercentUnitPrice" class="modeParams" style="display: none;">
+            <label for="filterMinPercentUp">Min Diff Percent</label> <input id="filterMinPercentUp" value="-30">
+            <label for="filterMinUp">Min Unit Price</label> <input id="filterMinUp" value="200">
+        </div>
+        <div id="ratioUnitPrice" class="modeParams" style="display: none;">
+            <label for="filterRatioUp1Up10">Min</label> <input id="filterRatioUp1Up10" value="2">
+        </div>
+    </div>
+
+    <table id="table"
+           class="table table-sm table-striped table-dark"
+           data-toggle="table"
+           data-url="/market_reports"
+           data-query-params="queryParams"
+           data-method="get"
+           data-sort-name=""
+           data-sort-order="desc"
+           data-search="true"
+           data-advanced-search="true"
+           data-toolbar="#tableToolbar"
+           data-striped="true"
+           data-show-refresh="true"
+           data-height="1250"
+           data-detail-view="true"
+           data-detail-formatter="detailFormatter">
+        <thead>
+            <tr>
+                <th data-field="it" data-sortable="true">Item</th>
+                <th data-field="me" data-sortable="true">Market Entry</th>
+                <th data-field="avg" data-sortable="true">Avg Price</th>
+                <th data-field="up1" data-sortable="true">Unit Price 1</th>
+                <th data-field="d_up_p1" data-sortable="true">Diff Percent 1 (UP)</th>
+                <th data-field="d_avg_p1" data-sortable="true">Diff Percent 1 (AVG)</th>
+                <th data-field="up10" data-sortable="true">Unit Price 10</th>
+                <th data-field="d_up_p10" data-sortable="true">Diff Percent 10 (UP)</th>
+                <th data-field="d_avg_p10" data-sortable="true">Diff Percent 10 (AVG)</th>
+                <th data-field="rup110" data-sortable="true">Ratio UP 1/10</th>
+                <th data-field="up100" data-sortable="true">Unit Price 100</th>
+                <th data-field="d_up_p100" data-sortable="true">Diff Percent 100 (UP)</th>
+                <th data-field="d_avg_p100" data-sortable="true">Diff Percent 100 (AVG)</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+    <script>
+        $(function() {
+            $('#modeSelect').change(function(){
+                $('.modeParams').hide();
+                $('#' + $(this).val()).show();
+            });
+        });
+        function queryParams() {
+            return {
+                'mode_select': $("#modeSelect").val(),
+                'min_percent_unit_price': $("#filterMinPercentUp").val(),
+                'min_unit_price': $("#filterMinUp").val(),
+                'min_percent_avg_price': $("#filterMinPercentAvgPrice").val(),
+                'min_avg_price': $("#filterMinAvgPrice").val(),
+                'ratio_up1_up10': $("#filterRatioUp1Up10").val()
+            };
+        };
+        $('#modeSelect,#filterMinPercentUp,#filterMinUp,#filterMinPercentAvgPrice,#filterMinAvgPrice,#filterRatioUp1Up10').on('change', function() {
+            $('#table').bootstrapTable('refresh');
+        });
+
+        function detailFormatter(index, row) {
+            html = '<p><b>Min / Max / Avg -> Unit Prices 1 : </b>' + row['min_up1'] + ' / ' + row['max_up1'] + ' / ' + row['avg_up1'] + ' -> ' + row['upz1'] + '</p>'
+            html += '<p><b>Min / Max / Avg -> Unit Prices 10 : </b>' + row['min_up10'] + ' / ' + row['max_up10'] + ' / ' + row['avg_up10'] + ' -> ' + row['upz10'] + '</p>'
+            html += '<p><b>Min / Max / Avg -> Unit Prices 100 : </b>' + row['min_up100'] + ' / ' + row['max_up100'] + ' / ' + row['avg_up100'] + ' -> ' + row['upz100'] + '</p>'
+            return html
+        }
+    </script>
+{% endblock %}

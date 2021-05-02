@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}Market History{% endblock %}
+
+{% block header %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='css/bootstrap-table.min.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+    <table id="table"
+           class="table table-sm table-striped table-dark"
+           data-toggle="table"
+           data-url="/market_histories"
+           data-query-params="queryParams"
+           data-method="get"
+           data-sort-name="id"
+           data-sort-order="desc"
+           data-search="true"
+           data-advanced-search="true"
+           data-striped="true"
+           data-show-refresh="true"
+           data-height="1250">
+        <thead>
+            <tr>
+                <th data-field="id" data-sortable="true">Id</th>
+                <th data-field="dt" data-sortable="true">Create Date</th> 
+                <th data-field="me" data-sortable="true">Market Entry</th>
+                <th data-field="it" data-sortable="true">Item</th>
+                <th data-field="p1" data-sortable="true">Price 1</th>
+                <th data-field="p10" data-sortable="true">Price 10</th>
+                <th data-field="p100" data-sortable="true">Price 100</th>
+                <th data-field="up1" data-sortable="true">Unit Price 1</th>
+                <th data-field="up10" data-sortable="true">Unit Price 10</th>
+                <th data-field="up100" data-sortable="true">Unit Price 100</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block footer %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/bootstrap-table.min.js')}}"></script>
+{% endblock %}
